@@ -1,0 +1,65 @@
+name: MCTag
+version: 1.0
+main: me.hawkfalcon.mctag.MCTag
+commands:
+    Tag:
+       description: All the MCTag commands
+       usage: /tag [start|stop|tagback(allow|forbid)|freezetag(on|off)]  
+       aliases: mctag 
+       
+permissions: 
+    MCTag.start:
+        description: Allows use of /tag start
+        default: OP
+        
+    MCTag.stop:
+        description: Allows use of /tag stop
+        default: OP
+        
+    MCTag.tagbackallow:
+        description: Allows use of /tag tagback allow
+        default: OP
+        
+    MCTag.tagbackforbid:
+        description: Allows use of /tag tagback forbid
+        default: OP
+        
+    MCTag.it:
+        description: Allows use of /tag it
+        default: true
+        
+    MCTag.reload:
+        description: Allows use of /tag reload
+        default: OP
+        
+    MCTag.freezetagon:
+        description: Allows use of /tag freezetag on
+        default: OP
+        
+    MCTag.freezetagoff: 
+        decription: Allows use of /tag freezetag off
+        default: OP
+        
+    MCTag.join: 
+        decription: Allows use of /tag join
+        default: true
+        
+    MCTag.leave: 
+        decription: Allows use of /tag leave
+        default: true
+        
+    MCTag.setspawn: 
+        decription: Allows use of /tag setspawn
+        default: OP
+        
+    MCTag.notele.bypass:
+       description: Allows bypass of no teleporting
+       default: OP
+       
+    MCTag.nocommands.bypass:
+       description: Allows bypass of no commands
+       default: OP
+       
+    MCTag.players:
+       description: Allows use of /tag players
+       default: OP
