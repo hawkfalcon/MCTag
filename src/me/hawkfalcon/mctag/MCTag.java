@@ -20,7 +20,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class MCTag extends JavaPlugin implements Listener {
 
-	TheMethods method;
 	Logger log;
 	ArrayList<String> frozenPlayers = new ArrayList<String>();
 	ArrayList<String> playersInGame = new ArrayList<String>();
@@ -37,9 +36,9 @@ public class MCTag extends JavaPlugin implements Listener {
 	
 	String commands = "Commands: \n /tag <join|leave> - join or leave the game \n /tag <start|stop> - start and stop game \n /tag it - view tagged player \n /tag players - view joined playrs \n /tag tagback <allow|forbid> - allow and forbid tagback \n /tag freezetag <on|off> - turn freeze tag on and off \n /tag reload - reloads the config \n /tag setspawn - set arena spawnpoint";
 	
-	public CommandExecutor cexec = new Commands(this, new TheMethods(this));
-	public Listener Tag = new Tag(this, new TheMethods(this));
-
+	TheMethods method;
+	CommandExecutor cexec; 
+	Listener tag; 
 	
 	public static TagUtil util;
 	public static GlobalVariables vars;
@@ -47,19 +46,23 @@ public class MCTag extends JavaPlugin implements Listener {
 	
 	
 	public void onEnable() {
-	
-	method = new TheMethods(this);
-	
-		util = new TagUtil();
+		ErrorLogger.register(this, "MCTag", "me.hawkfalcon.mctag", "https://github.com/hawkfalcon/MCTag/issues");
+        util = new TagUtil();
 		vars = new GlobalVariables(this, "mctag");
 		vars.load();
+
+		method = new TheMethods(this);
+		tag = new Tag(this, method);
+		cexec = new Commands(this, method);
+
+		
 		
 		pm = getServer().getPluginManager();
 		
 		log = getLogger();	
 		
 		pm.registerEvents(new Events(this, new TheMethods(this)), this);
-		pm.registerEvents(Tag, this);
+		pm.registerEvents(tag, this);
 		
 		getCommand("Tag").setExecutor(cexec);
 		
