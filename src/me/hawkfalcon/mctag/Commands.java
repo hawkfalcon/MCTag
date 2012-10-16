@@ -14,7 +14,7 @@ import org.bukkit.event.EventHandler;
 public class Commands implements CommandExecutor{
 	private MCTag plugin;
 	private TheMethods method;
-	
+
 	private boolean arena_mode;
 	private boolean tagback;
 	public Commands(MCTag m, TheMethods me) {

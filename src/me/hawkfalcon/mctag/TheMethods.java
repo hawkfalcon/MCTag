@@ -19,8 +19,8 @@ public class TheMethods{
 
 	private MCTag plugin;
 	private boolean arena_mode;
-	
-	
+
+
 	public TheMethods(MCTag m) {
 		this.plugin = m;
 		this.arena_mode = MCTag.vars.Modes_Arena;
@@ -84,7 +84,7 @@ public class TheMethods{
 		}
 		plugin.playerIt = player;
 		setArmor(player);
-		
+
 		//arena mode
 		if (arena_mode){
 			for (String p : plugin.playersInGame) {
@@ -117,7 +117,7 @@ public class TheMethods{
 
 	//freezes player
 	public void freezePlayer(String player) {
-		
+
 		//player is not already frozen
 		if (!plugin.frozenPlayers.contains(player)){
 			plugin.frozenPlayers.add(player);
@@ -150,7 +150,7 @@ public class TheMethods{
 	}
 	public void joinPlayer(String player) {
 		//arena mode on
-		
+
 		if (arena_mode){
 			if (!plugin.playersInGame.contains(player)){
 
