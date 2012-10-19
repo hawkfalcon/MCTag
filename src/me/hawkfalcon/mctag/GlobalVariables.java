@@ -28,7 +28,9 @@ public boolean Modes_Arena = false;
 public boolean Modes_Freeze = false;
 
 public boolean Player_Allow__Tagback = false;
-public boolean Player__Commands__In__Arena = false;
+public boolean Player_Commands__In__Arena = false;
+public boolean Player_Damage__From__Tagger = true;
+public boolean Player_Air__In__Hand__To__Tag = true;
 
 public String Spawn_Location = " ";
 

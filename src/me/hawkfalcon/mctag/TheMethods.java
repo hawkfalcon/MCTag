@@ -88,12 +88,12 @@ public class TheMethods{
 		//arena mode
 		if (arena_mode){
 			for (String p : plugin.playersInGame) {
-				MCTag.util.message(Bukkit.getPlayerExact(p), MCTag.vars.Message_On__It);
+				MCTag.util.message(Bukkit.getPlayerExact(p), MCTag.vars.Message_On__It.replace("%p", player));
 			}
 		}
 		//not arena mode
 		else {
-			MCTag.util.broadcast(MCTag.vars.Message_On__It);
+			MCTag.util.broadcast(MCTag.vars.Message_On__It.replace("%p", player));
 		}
 		//smoke!
 		for (int i = 0; i <= 8; i++)
@@ -107,7 +107,7 @@ public class TheMethods{
 			plugin.playerIt = player;
 			setArmor(player);			
 			for (String p : plugin.playersInGame) {
-				MCTag.util.message(Bukkit.getPlayerExact(p), MCTag.vars.Message_On__It);
+				MCTag.util.message(Bukkit.getPlayerExact(p), MCTag.vars.Message_On__It.replace("%p", player));
 			}
 			//smoke!
 			for (int i = 0; i <= 8; i++)
@@ -155,7 +155,7 @@ public class TheMethods{
 			if (!plugin.playersInGame.contains(player)){
 
 				for (String p : plugin.playersInGame) {
-					MCTag.util.message(Bukkit.getPlayerExact(p), MCTag.vars.Message_On__Join.replace("%p", p));
+					MCTag.util.message(Bukkit.getPlayerExact(p), MCTag.vars.Message_On__Join.replace("%p", player));
 				}
 				teleportPlayer(player);
 				plugin.playersInGame.add(player);

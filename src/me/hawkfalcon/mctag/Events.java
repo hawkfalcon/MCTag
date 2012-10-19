@@ -38,7 +38,7 @@ public class Events implements Listener{
 		this.freeze = MCTag.vars.Modes_Freeze;
 		this.arena_mode = MCTag.vars.Modes_Arena;
 		this.tagback = MCTag.vars.Player_Allow__Tagback;
-		this.commands = MCTag.vars.Player__Commands__In__Arena;
+		this.commands = MCTag.vars.Player_Commands__In__Arena;
 	}
 
 	//if player quits
@@ -135,23 +135,23 @@ public class Events implements Listener{
 	@EventHandler
 	public void deadPlayer(PlayerDeathEvent event){
 		//List<ItemStack> itemid = event.getDrops();
-		plugin.getServer().broadcastMessage("DEBUGDie " + plugin.playerIt + "|" + event.getEntity().getPlayer().getName());
-		
 		if(event.getEntity().getPlayer().getName().equals(plugin.playerIt)) {
-            event.getDrops().remove(new ItemStack(Material.CHAINMAIL_HELMET));
-            event.getDrops().remove(new ItemStack(Material.CHAINMAIL_CHESTPLATE));
-            event.getDrops().remove(new ItemStack(Material.CHAINMAIL_LEGGINGS));
-            event.getDrops().remove(new ItemStack(Material.CHAINMAIL_BOOTS));
+		plugin.getServer().broadcastMessage("DEBUGDie " + plugin.playerIt + "|" + event.getEntity().getPlayer().getName() + " DROPED== " + event.getDrops());
+		
+            event.getDrops().remove(Material.CHAINMAIL_HELMET);
+            event.getDrops().remove(Material.CHAINMAIL_CHESTPLATE);
+            event.getDrops().remove(Material.CHAINMAIL_LEGGINGS);
+            event.getDrops().remove(Material.CHAINMAIL_BOOTS);
 		}
 		if(plugin.frozenPlayers.contains(event.getEntity().getPlayer().getName())) {
-            event.getDrops().remove(new ItemStack(Material.ICE));
+            event.getDrops().remove(Material.ICE);
 		}
 		
 	}
 	@EventHandler
 	public void onPlayerRespawn(PlayerRespawnEvent event) {
 		String player = event.getPlayer().getName();
-		plugin.getServer().broadcastMessage("DEBUGResp " + plugin.playerIt + "|" + player);
+		plugin.getServer().broadcastMessage("DEBUGResp " + player);
 		if (plugin.playersInGame.contains(player)){
 			method.teleportPlayer(player);
 		}

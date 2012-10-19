@@ -22,10 +22,10 @@ public class Tag implements Listener {
 		this.plugin = m;
 		this.method = me;
         this.freeze = MCTag.vars.Modes_Freeze;
-        this.airInHand = true; //TODO: Add node in GlobalVariables for this
+        this.airInHand = true; //TODO: Add node in GlobalVariables for this - added, update
         this.tagback = MCTag.vars.Player_Allow__Tagback;
         this.arena_mode = MCTag.vars.Modes_Arena;
-        this.tag_damage = false; //TODO: Add node in GlobalVariables for this
+        this.tag_damage = false; //TODO: Add node in GlobalVariables for this added, update
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)

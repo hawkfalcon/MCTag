@@ -37,6 +37,18 @@ public class ReflectConfiguration {
 
     }
 
+public void save() {
+ 
+        try {
+            mutex.acquire();          
+            onSave(plugin);
+            mutex.release();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private void onLoad(Plugin plugin) throws Exception {
 
         File worldFile = new File(plugin.getDataFolder(), File.separator + name + ".yml");
@@ -56,7 +68,25 @@ public class ReflectConfiguration {
             }
         }
 
+        worlds.save(worldFile);
+    }
 
+private void onSave(Plugin plugin) throws Exception {
+
+        File worldFile = new File(plugin.getDataFolder(), File.separator + name + ".yml");
+
+        YamlConfiguration worlds = YamlConfiguration
+                .loadConfiguration(worldFile);
+
+        for (Field field : getClass().getDeclaredFields()) {
+            String path = "MCTag."
+                    + field.getName().replaceAll("__", " ")
+                    .replaceAll("_", ".");
+            if (doSkip(field)) {
+            } else {
+                worlds.set(path, field.get(this));
+            }
+        }
         worlds.save(worldFile);
     }
 

@@ -185,7 +185,7 @@ public class Commands implements CommandExecutor{
 							Location loc = player.getLocation();
 							String location = (loc.getWorld().getName() + "|" + loc.getX() + "|" + loc.getY() + "|" + loc.getZ());
 							MCTag.vars.Spawn_Location = location;
-							MCTag.vars.load();
+							MCTag.vars.save();
 							player.sendMessage(ChatColor.GOLD + "Spawn point set!");					
 						}
 						//no perms
@@ -224,9 +224,15 @@ public class Commands implements CommandExecutor{
 							//arena mode on
 							if (arena_mode){
 								if (plugin.playersInGame.contains(player.getName())){
+									method.restoreArmor(player.getName());
+									player.teleport(player.getServer().getWorld("0").getSpawnLocation());
 									plugin.playersInGame.remove(player.getName());
-									if (player.getName() == plugin.playerIt){
+									//if leaver is it
+									if (player.getName().equals(plugin.playerIt)){
+										//more than 1 person
 										if (plugin.playersInGame.size() > 1) {
+											plugin.getServer().broadcastMessage("DEBUG" + plugin.playersInGame.size());
+											method.restoreArmor(plugin.playerIt);
 											for (String p : plugin.playersInGame) {
 												Bukkit.getPlayer(p).sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + plugin.playerIt + " has left, randomly selecting next person to be it!");
 											}
@@ -237,10 +243,12 @@ public class Commands implements CommandExecutor{
 											method.gameOff();
 										}
 									}
-									for (String p : plugin.playersInGame) {
-										Bukkit.getPlayer(p).sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + plugin.playerIt + " has left the game!");
+									//not it
+									else {							
+										for (String p : plugin.playersInGame) {
+											Bukkit.getPlayer(p).sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + player.getName() + " has left the game!");
+										}
 									}
-									player.teleport(player.getServer().getWorld("0").getSpawnLocation());
 								}
 								//You are already in the game
 								else {
@@ -287,7 +295,7 @@ public class Commands implements CommandExecutor{
 									//tagbacks are off
 									if (!tagback){
 										MCTag.vars.Player_Allow__Tagback = true;
-										MCTag.vars.load();
+										MCTag.vars.save();
 										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Tagbacks are now allowed!");
 									}
 									//tagbacks are on
@@ -315,7 +323,7 @@ public class Commands implements CommandExecutor{
 									//tagbacks are on
 									if (tagback){
 										MCTag.vars.Player_Allow__Tagback = false;
-										MCTag.vars.load();								
+										MCTag.vars.save();								
 										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Tagbacks are now forbidden!");
 									}
 									//tagbacks are off
@@ -346,7 +354,7 @@ public class Commands implements CommandExecutor{
 									//freezetag is off
 									if (!freeze){
 										MCTag.vars.Modes_Freeze = true;
-										MCTag.vars.load();									
+										MCTag.vars.save();									
 										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Freeze tag is now enabled!");
 									}
 									//freezetag is on
@@ -374,7 +382,7 @@ public class Commands implements CommandExecutor{
 									//freezetag is on
 									if (freeze){
 										MCTag.vars.Modes_Freeze = false;
-										MCTag.vars.load();								
+										MCTag.vars.save();								
 										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Freeze tag is now disabled!");
 									}
 									//freezetag is off
