@@ -136,7 +136,7 @@ public class Events implements Listener{
 	public void deadPlayer(PlayerDeathEvent event){
 		//List<ItemStack> itemid = event.getDrops();
 		if(event.getEntity().getPlayer().getName().equals(plugin.playerIt)) {
-		plugin.getServer().broadcastMessage("DEBUGDie " + plugin.playerIt + "|" + event.getEntity().getPlayer().getName() + " DROPED== " + event.getDrops());
+		//plugin.getServer().broadcastMessage("DEBUGDie " + plugin.playerIt + "|" + event.getEntity().getPlayer().getName() + " DROPED== " + event.getDrops());
 		
             event.getDrops().remove(Material.CHAINMAIL_HELMET);
             event.getDrops().remove(Material.CHAINMAIL_CHESTPLATE);
@@ -151,6 +151,7 @@ public class Events implements Listener{
 	@EventHandler
 	public void onPlayerRespawn(PlayerRespawnEvent event) {
 		String player = event.getPlayer().getName();
+		if(player == null || plugin.playerIt == null) return;
 		plugin.getServer().broadcastMessage("DEBUGResp " + player);
 		if (plugin.playersInGame.contains(player)){
 			method.teleportPlayer(player);

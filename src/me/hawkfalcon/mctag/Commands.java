@@ -41,6 +41,10 @@ public class Commands implements CommandExecutor{
 					//start game
 					if (args[0].equalsIgnoreCase("start")||args[0].equalsIgnoreCase("on")){
 						if (sender.hasPermission("MCTag.start")) {
+							if (MCTag.vars.Spawn_Location.equals(" ")) {
+								player.sendMessage("Please set spawn point first");
+								return true;
+							}
 							//player is already it
 							if (player.getName().equals(plugin.playerIt)) {
 								player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + MCTag.vars.Message_On__Already__It);
@@ -225,7 +229,7 @@ public class Commands implements CommandExecutor{
 							if (arena_mode){
 								if (plugin.playersInGame.contains(player.getName())){
 									method.restoreArmor(player.getName());
-									player.teleport(player.getServer().getWorld("0").getSpawnLocation());
+									player.teleport(player.getServer().getWorlds().get(0).getSpawnLocation());
 									plugin.playersInGame.remove(player.getName());
 									//if leaver is it
 									if (player.getName().equals(plugin.playerIt)){

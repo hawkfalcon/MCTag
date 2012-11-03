@@ -2,7 +2,7 @@ package me.hawkfalcon.mctag;
 //Made by: hawkfalcon. Feel free to use the code
 
 
-import java.io.File;
+//import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,13 +10,12 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 
 import org.bukkit.command.CommandExecutor;
-import org.bukkit.configuration.file.FileConfiguration;
+//import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-//FIXED!
 
 public class MCTag extends JavaPlugin implements Listener {
 
