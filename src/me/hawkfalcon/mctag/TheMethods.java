@@ -144,10 +144,26 @@ public class TheMethods{
 		removeIce(player);	
 	}
 
-	public void teleportPlayer(String player) {		
-		String[] loc = MCTag.vars.Spawn_Location.split("\\|");		
-		Bukkit.getPlayerExact(player).teleport(new Location(Bukkit.getWorld(loc[0]), Double.parseDouble(loc[1]), Double.parseDouble(loc[2]), Double.parseDouble(loc[3])));
-	}
+	//public void teleportPlayer(String player) {		
+		//String[] loc = MCTag.vars.Spawn_Location.split("\\|");		
+		//Bukkit.getPlayerExact(player).teleport(new Location(Bukkit.getWorld(loc[0]), Double.parseDouble(loc[1]), Double.parseDouble(loc[2]), Double.parseDouble(loc[3])));
+	//}
+	 public void teleportPlayer(String player) { 
+		 String[] loc = MCTag.vars.Spawn_Location.split("\\|"); 
+		 System.out.println(Arrays.asList(loc));
+		 Player p = Bukkit.getPlayerExact(player);
+		 if(p==null) {
+		 System.out.println("FETCHED PLAYER IS NULL!!!!!!!!!!!!!!!!!!");
+		 return;
+		 }
+		 World to = Bukkit.getWorld(loc[0]);
+		 System.out.println(loc[0]);
+		 if(to==null) {
+		 System.out.println("FETCHED WORLD IS NULL!!!!!!!!!!!!!!!!!!");
+		 return;
+		 }
+		 p.teleport(new Location(Bukkit.getWorld(loc[0]), Double.parseDouble(loc[1]), Double.parseDouble(loc[2]), Double.parseDouble(loc[3])));
+		 }
 	public void joinPlayer(String player) {
 		//arena mode on
 
