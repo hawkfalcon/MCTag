@@ -52,7 +52,6 @@ public class Commands implements CommandExecutor{
 							//start game
 							else {
 								boolean freeze = MCTag.vars.Modes_Freeze;
-								
 								//normal tag
 								if (!freeze){
 									//no games are on
