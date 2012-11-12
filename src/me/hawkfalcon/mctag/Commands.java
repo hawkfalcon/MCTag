@@ -1,432 +1,371 @@
 package me.hawkfalcon.mctag;
 
-import java.util.Arrays;
-
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 
-public class Commands implements CommandExecutor{
-	private MCTag plugin;
-	private TheMethods method;
+public class Commands {
+    private static MCTag plugin;
+    private static TheMethods method;
 
-	private boolean arena_mode;
-	private boolean tagback;
-	public Commands(MCTag m, TheMethods me) {
-		this.plugin = m;
-		this.method = me;
-		this.arena_mode = MCTag.vars.Modes_Arena;
-		this.tagback = MCTag.vars.Player_Allow__Tagback;
+    private static boolean arena_mode;
+    private static boolean tagback;
 
-	}
+    public static void setup(MCTag m, TheMethods me) {
+        plugin = m;
+        method = me;
+        arena_mode = MCTag.vars.Modes_Arena;
+        tagback = MCTag.vars.Player_Allow__Tagback;
+    }
 
-	//commands
-	@EventHandler
-	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-		//tag
-		if (cmd.getName().equalsIgnoreCase("tag")||cmd.getName().equalsIgnoreCase("mctag")) {
-			if (sender instanceof Player){
-				Player player = (Player) sender;				
-				//nothing
-				if (args.length == 0){
-					player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.AQUA + plugin.commands);
-					return true;
-				}
-				if (args.length == 1) {
-					//start game
-					if (args[0].equalsIgnoreCase("start")||args[0].equalsIgnoreCase("on")){
-						if (sender.hasPermission("MCTag.start")) {
-							if (MCTag.vars.Spawn_Location.equals(" ")) {
-								player.sendMessage("Please set spawn point first");
-								return true;
-							}
-							//player is already it
-							if (player.getName().equals(plugin.playerIt)) {
-								player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + MCTag.vars.Message_On__Already__It);
-							}
-							//start game
-							else {
-								boolean freeze = MCTag.vars.Modes_Freeze;
-								//normal tag
-								if (!freeze){
-									//no games are on
-									if ((!plugin.gameOn) || (plugin.startBool)){
-										//not arena mode
-										if (!arena_mode){
-											int playersonline = Arrays.asList(plugin.getServer().getOnlinePlayers()).size();
-											//more than 1 player on
-											if (playersonline > 1){
-												plugin.gameOn = true;
-												plugin.startBool = false;
-												plugin.getServer().broadcastMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + MCTag.vars.Message_On__Game__Start);
-												method.selectPlayer();
-											}
-											//1 player
-											else {
-												player.sendMessage(ChatColor.RED + "There must be at least 2 people online to play tag");
+    @ReflectCommand.Command(
+            name = "start",
+            alias = "on",
+            root = "mctag",
+            rootAlias = "tag",
+            permission = "MCTag.start"
+    )
+    public static boolean start(Player sender) {
+        if (StringUtils.isEmpty(MCTag.vars.Spawn_Location)) {
+            sender.sendMessage("Please set spawn point first!");
+            return true;
+        }
 
-											}
-										}
-										//arena mode
-										else{
-											plugin.gameOn = true;
-											plugin.startBool = false;
-											plugin.getServer().broadcastMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + MCTag.vars.Message_On__Game__Start__In__Arena);
-											method.startGameWith(player.getName());
-										}
-									}
-									//game on already
-									else {
-										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "There is already a game of tag started!");
-									}
-								}
-								//freeze tag
-								else if (freeze) {
-									//no games are on
-									if ((!plugin.gameOn) || (plugin.startBool)){
-										if (!arena_mode){
-											int playersonline = Arrays.asList(plugin.getServer().getOnlinePlayers()).size();
-											//more then 2 people on
-											if (playersonline > 2){
-												plugin.gameOn = true;
-												plugin.startBool = false;
-												plugin.getServer().broadcastMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + MCTag.vars.Message_On__Game__Freezetag__Start);
-												method.selectPlayer();
-											}
-											//2- players
-											else {
-												player.sendMessage(ChatColor.RED + "There must be at least 3 people online to play freeze tag");
-											}
-										}
-										//arena mode
-										else {
-											plugin.gameOn = true;
-											plugin.startBool = false;
-											plugin.getServer().broadcastMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + MCTag.vars.Message_On__Game__Freezetag__Start__In__Arena);
-											method.startGameWith(player.getName());
-										}
-									}
-									//game already on
-									else {
-										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "There is already a game of tag started!");
+        int online = plugin.getServer().getOnlinePlayers().length;
 
-									}
-								}
-								//this shouldn't happen, but just in case
-								else {
-									player.sendMessage("Error #102");
+        //player is already it
+        if (sender.getName().equals(plugin.playerIt)) {
+            sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + MCTag.vars.Message_On__Already__It);
+        }
+        //start game
+        else {
+            boolean freeze = MCTag.vars.Modes_Freeze;
+            //normal tag
+            if (!freeze) {
+                //no games are on
+                if ((!plugin.gameOn) || (plugin.startBool)) {
+                    //not arena mode
+                    if (!arena_mode) {
+                        //more than 1 player on
+                        if (online > 1) {
+                            plugin.gameOn = true;
+                            plugin.startBool = false;
+                            MCTag.util.broadcast(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + MCTag.vars.Message_On__Game__Start);
+                            method.selectPlayer();
+                        }
+                        //1 player
+                        else {
+                            sender.sendMessage(ChatColor.RED + "There must be at least 2 people online to play tag");
 
-								}
-							}
-						} 
-						//no permission
-						else {
-							player.sendMessage(ChatColor.RED + "You don't have permission!");
-						}
-						return true;
-					}
-					//stop game
-					if (args[0].equalsIgnoreCase("stop")||args[0].equalsIgnoreCase("off")){
-						if (sender.hasPermission("MCTag.stop")) {
-							//game is on
-							if (plugin.gameOn){
-								method.gameOff();
-							}
-							//game is off
-							else {
-								player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "There is no game to stop!");
+                        }
+                    }
+                    //arena mode
+                    else {
+                        plugin.gameOn = true;
+                        plugin.startBool = false;
+                        MCTag.util.broadcast(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + MCTag.vars.Message_On__Game__Start__In__Arena);
+                        method.startGameWith(sender.getName());
+                    }
+                }
+                //game on already
+                else {
+                    sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "There is already a game of tag started!");
+                }
+            }
+            //freeze tag
+            else if (freeze) {
+                //no games are on
+                if ((!plugin.gameOn) || (plugin.startBool)) {
+                    if (!arena_mode) {
+                        //more then 2 people on
+                        if (online > 2) {
+                            plugin.gameOn = true;
+                            plugin.startBool = false;
+                            MCTag.util.broadcast(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + MCTag.vars.Message_On__Game__Freezetag__Start);
+                            method.selectPlayer();
+                        }
+                        else {
+                            sender.sendMessage(ChatColor.RED + "There must be at least 3 people online to play freeze tag!");
+                        }
+                    }
+                    else {
+                        plugin.gameOn = true;
+                        plugin.startBool = false;
+                        MCTag.util.broadcast(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + MCTag.vars.Message_On__Game__Freezetag__Start__In__Arena);
+                        method.startGameWith(sender.getName());
+                    }
+                }
+                else {
+                    sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "There is already a game of tag started!");
+                }
+            }
+            else {
+                ErrorLogger.generateErrorLog(new RuntimeException("Error #102"));
+            }
+        }
+        return true;
+    }
 
-							}
-						} 
-						//no perms
-						else {
-							player.sendMessage(ChatColor.RED + "You don't have permission!");
-						}
-						return true;
+    @ReflectCommand.Command(
+            name = "stop",
+            alias = "off",
+            root = "mctag",
+            rootAlias = "tag",
+            permission = "MCTag.stop"
+    )
+    public boolean stop(Player sender) {
+        if (plugin.gameOn)
+            method.gameOff();
+        else
+            sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "There is no game to stop!");
+        return true;
+    }
 
-					}
-					//who is it
-					if (args[0].equalsIgnoreCase("it")){
-						if (sender.hasPermission("MCTag.it")) {
-							//someone is it
-							if (plugin.playerIt != null){
-								player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.GOLD + plugin.playerIt + " is currently it!");
-							}
-							//noone is it
-							else {
-								player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.GOLD +  "Nobody is currently it!");
+    @ReflectCommand.Command(
+            name = "it",
+            alias = "whosit",
+            root = "mctag",
+            rootAlias = "tag",
+            permission = "MCTag.it"
+    )
+    public boolean whosit(Player sender) {
+        //someone is it
+        if (plugin.playerIt != null)
+            sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.GOLD + plugin.playerIt + " is currently it!");
+        else
+            sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.GOLD + "Nobody is currently it!");
+        return true;
+    }
 
-							}
-						}
-						//no perms
-						else {
-							player.sendMessage(ChatColor.RED + "You don't have permission!");
-						}
-						return true;
-					}
-					//list players
-					if (args[0].equalsIgnoreCase("players")){
-						if (sender.hasPermission("MCTag.players")) {
-							player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.GOLD + "Players in arena:");
-							for (String p : plugin.playersInGame) {
-								player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.GOLD + "- " + p);
-							}
-						}
-						//no perms
-						else {
-							player.sendMessage(ChatColor.RED + "You don't have permission!");
-						}
-						return true;
-					}
-					//setspawn
-					if (args[0].equalsIgnoreCase("setspawn")){
-						if (sender.hasPermission("MCTag.setspawn")) {
-							Location loc = player.getLocation();
-							String location = (loc.getWorld().getName() + "|" + loc.getX() + "|" + loc.getY() + "|" + loc.getZ());
-							MCTag.vars.Spawn_Location = location;
-							MCTag.vars.save();
-							player.sendMessage(ChatColor.GOLD + "Spawn point set!");					
-						}
-						//no perms
-						else {
-							player.sendMessage(ChatColor.RED + "You don't have permission!");
-						}
-						return true;
-					}
-					//join game
-					if (args[0].equalsIgnoreCase("join")){
-						if (sender.hasPermission("MCTag.join")) {
-							if (plugin.gameOn){
-								if (!plugin.playersInGame.contains(player.getName())){
-									player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + "You have joined the game!");
-									method.joinPlayer(player.getName());
-								}
-								else {
-									player.sendMessage(ChatColor.RED + "You are already in the game!");
+    @ReflectCommand.Command(
+            name = "players",
+            alias = "numplayers",
+            root = "mctag",
+            rootAlias = "tag",
+            permission = "MCTag.players"
+    )
+    public boolean numPlayers(Player sender) {
+        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.GOLD + "Players in arena:");
+        for (String p : plugin.playersInGame)
+            sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.GOLD + "- " + p);
+        return true;
+    }
 
-								}
-							}
-							else {
-								player.sendMessage(ChatColor.RED + "There is no game started!");
+    @ReflectCommand.Command(
+            name = "setspawn",
+            root = "mctag",
+            rootAlias = "tag",
+            permission = "MCTag.setspawn"
+    )
+    public boolean setspawn(Player sender) {
+        Location loc = sender.getLocation();
+        String location = (loc.getWorld().getName() + "|" + loc.getX() + "|" + loc.getY() + "|" + loc.getZ());
+        MCTag.vars.Spawn_Location = location;
+        MCTag.vars.save();
+        sender.sendMessage(ChatColor.GOLD + "Spawn point set!");
+        return true;
+    }
 
-							}
-						}
-						//no perms
-						else {
-							player.sendMessage(ChatColor.RED + "You don't have permission!");
-						}
-						return true;
-					}
-					//leave game
-					if (args[0].equalsIgnoreCase("leave")){
-						if (sender.hasPermission("MCTag.leave")) {
-							//arena mode on
-							if (arena_mode){
-								if (plugin.playersInGame.contains(player.getName())){
-									method.restoreArmor(player.getName());
-									player.teleport(player.getServer().getWorlds().get(0).getSpawnLocation());
-									plugin.playersInGame.remove(player.getName());
-									//if leaver is it
-									if (player.getName().equals(plugin.playerIt)){
-										//more than 1 person
-										if (plugin.playersInGame.size() > 1) {
-											plugin.getServer().broadcastMessage("DEBUG" + plugin.playersInGame.size());
-											method.restoreArmor(plugin.playerIt);
-											for (String p : plugin.playersInGame) {
-												Bukkit.getPlayer(p).sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + plugin.playerIt + " has left, randomly selecting next person to be it!");
-											}
-											plugin.frozenPlayers.clear();
-											method.selectPlayerFromArena();
-										}
-										else{
-											method.gameOff();
-										}
-									}
-									//not it
-									else {							
-										for (String p : plugin.playersInGame) {
-											Bukkit.getPlayer(p).sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + player.getName() + " has left the game!");
-										}
-									}
-								}
-								//You are already in the game
-								else {
-									player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED +  "You are not in the game!");
-								}
-							}
-							else {
-								player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED +  "Arena mode is off!");
-							}
-						}
-						//no perms
-						else {
-							player.sendMessage(ChatColor.RED + "You don't have permission!");
-						}
-						return true;
-					}
-					//reload config
-					if (args[0].equalsIgnoreCase("reload")){
-						if (sender.hasPermission("MCTag.reload")) {
-							MCTag.vars.load();	
-							player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.GOLD + "Config reloaded");
-						}
-						//no perms
-						else {
-							player.sendMessage(ChatColor.RED + "You don't have permission!");
-						}
-						return true;
-					}
-					//Misspellings
-					else {
-						player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.AQUA + plugin.commands);
-					}
-					return true;
+    @ReflectCommand.Command(
+            name = "join",
+            root = "mctag",
+            rootAlias = "tag",
+            permission = "MCTag.join"
+    )
+    public boolean join(Player sender) {
+        if (plugin.gameOn) {
+            if (!plugin.playersInGame.contains(sender.getName())) {
+                sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + "You have joined the game!");
+                method.joinPlayer(sender.getName());
+            } else {
+                sender.sendMessage(ChatColor.RED + "You are already in a game!");
+            }
+        } else {
+            sender.sendMessage(ChatColor.RED + "There is no game started!");
 
+        }
+        return true;
+    }
 
-				}
-				if (args.length == 2) {
-					//tagback toggle
-					if (args[0].equalsIgnoreCase("tagback")){
-						//tagback on
-						if (args[1].equalsIgnoreCase("allow")||args[1].equalsIgnoreCase("on")){
-							if (sender.hasPermission("MCTag.tagbackallow")) {
-								if (!plugin.gameOn) {									
-									//tagbacks are off
-									if (!tagback){
-										MCTag.vars.Player_Allow__Tagback = true;
-										MCTag.vars.save();
-										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Tagbacks are now allowed!");
-									}
-									//tagbacks are on
-									else {
-										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "Tagbacks are already allowed!");
-									}
+    @ReflectCommand.Command(
+            name = "leave",
+            alias = "gtfo",
+            root = "mctag",
+            rootAlias = "tag",
+            permission = "MCTag.leave"
+    )
+    public boolean leave(Player sender) {
+        if (arena_mode) {
+            if (plugin.playersInGame.contains(sender.getName())) {
+                method.restoreArmor(sender.getName());
+                sender.teleport(sender.getServer().getWorlds().get(0).getSpawnLocation());
+                plugin.playersInGame.remove(sender.getName());
+                if (sender.getName().equals(plugin.playerIt)) {
+                    if (plugin.playersInGame.size() > 1) {
+                        method.restoreArmor(plugin.playerIt);
+                        for (String p : plugin.playersInGame) {
+                            Bukkit.getPlayer(p).sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + plugin.playerIt + " has left, randomly selecting next person to be it!");
+                        }
+                        plugin.frozenPlayers.clear();
+                        method.selectPlayerFromArena();
+                    } else {
+                        method.gameOff();
+                    }
+                }
+                else {
+                    for (String p : plugin.playersInGame) {
+                        Bukkit.getPlayer(p).sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.BLUE + sender.getName() + " has left the game!");
+                    }
+                }
+            }
+            else {
+                sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "You are not in the game!");
+            }
+        } else {
+            sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "Arena mode is off!");
+        }
+        return true;
+    }
 
-								} 
-								else {
-									player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "You can't switch modes while a game is running!");
-								}
-							}
-							//no perms
-							else {
-								player.sendMessage(ChatColor.RED + "You don't have permission!");
-							}
-							return true;
+    @ReflectCommand.Command(
+            name = "reload",
+            root = "mctag",
+            rootAlias = "tag",
+            permission = "MCTag.reload",
+            sender = ReflectCommand.Sender.EVERYONE
+    )
+    public boolean reload(CommandSender sender) {
+        MCTag.vars.load();
+        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.GOLD + "Configuration reloaded!");
+        return true;
+    }
 
-						}
-						//tagbacks off
-						if (args[1].equalsIgnoreCase("forbid")||args[1].equalsIgnoreCase("off")){
-							if (sender.hasPermission("MCTag.tagbackforbid")) {
-								if (!plugin.gameOn) {
-									boolean tagback = MCTag.vars.Player_Allow__Tagback;
-									//tagbacks are on
-									if (tagback){
-										MCTag.vars.Player_Allow__Tagback = false;
-										MCTag.vars.save();								
-										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Tagbacks are now forbidden!");
-									}
-									//tagbacks are off
-									else {
-										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "Tagbacks are already forbidden!");
+    @ReflectCommand.Command(
+            name = "tagback",
+            root = "mctag",
+            rootAlias = "tag",
+            permission = "MCTag.tagbacktoggle",
+            usage = "<command> [on|off]",
+            sender = ReflectCommand.Sender.EVERYONE
+    )
+    public boolean tagback(CommandSender sender, String flag) {
+        if (!plugin.gameOn) {
+            if (flag.equalsIgnoreCase("on")) {
+                if (!plugin.gameOn) {
+                    if (!tagback) {
+                        MCTag.vars.Player_Allow__Tagback = true;
+                        MCTag.vars.save();
+                        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Tagbacks are now allowed!");
+                    } else {
+                        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "Tagbacks are already allowed!");
+                    }
+                }
+            } else if (flag.equalsIgnoreCase("off")) {
+                if (!plugin.gameOn) {
+                    boolean tagback = MCTag.vars.Player_Allow__Tagback;
+                    //tagbacks are on
+                    if (tagback) {
+                        MCTag.vars.Player_Allow__Tagback = false;
+                        MCTag.vars.save();
+                        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Tagbacks are now forbidden!");
+                    }
+                    //tagbacks are off
+                    else {
+                        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "Tagbacks are already forbidden!");
+                    }
+                }
+            }
+        } else {
+            sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "You can't switch modes while a game is running!");
+        }
 
-									}
-								} 
-								else {
-									player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "You can't switch modes while a game is running!");	
-								}
-							}
-							//no perms
-							else {
-								player.sendMessage(ChatColor.RED + "You don't have permission!");
-							}
-							return true;
+        return true;
+    }
 
-						}
-					}
-					//freezetag toggle
-					if (args[0].equalsIgnoreCase("freezetag")){
-						//tagback on
-						if (args[1].equalsIgnoreCase("on")){
-							if (sender.hasPermission("MCTag.freezetagon")) {
-								if (!plugin.gameOn) {
-									boolean freeze = MCTag.vars.Modes_Freeze;
-									//freezetag is off
-									if (!freeze){
-										MCTag.vars.Modes_Freeze = true;
-										MCTag.vars.save();									
-										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Freeze tag is now enabled!");
-									}
-									//freezetag is on
-									else{
-										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "Freeze tag is already on!");
+    @ReflectCommand.Command(
+            name = "freezetag",
+            root = "mctag",
+            rootAlias = "tag",
+            permission = "MCTag.tagbacktoggle",
+            usage = "<command> [on|off]",
+            sender = ReflectCommand.Sender.EVERYONE
+    )
+    public boolean freezetag(CommandSender sender, String flag) {
+        if (!plugin.gameOn) {
+            if (flag.equalsIgnoreCase("on")) {
+                if (!plugin.gameOn) {
+                    //tagbacks are off
+                    if (!tagback) {
+                        MCTag.vars.Modes_Freeze = true;
+                        MCTag.vars.save();
+                        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Freezetag is now enabled!");
+                    }
+                    //tagbacks are on
+                    else {
+                        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "Freezetag is already enabled!");
+                    }
 
-									}
-								} 
-								else {
-									player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "You can't switch modes while a game is running!");
-								}
-							}
-							//no perms
-							else {
-								player.sendMessage(ChatColor.RED + "You don't have permission!");
-							}
-							return true;
+                }
+            } else if (flag.equalsIgnoreCase("off")) {
+                if (!plugin.gameOn) {
+                    boolean tagback = MCTag.vars.Modes_Freeze;
+                    //tagbacks are on
+                    if (tagback) {
+                        MCTag.vars.Modes_Freeze = false;
+                        MCTag.vars.save();
+                        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Freezetag is now disabled!");
+                    }
+                    //tagbacks are off
+                    else {
+                        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "Freezetag is already disabled!");
+                    }
+                }
+            }
+        } else {
+            sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "You can't switch modes while a game is running!");
+        }
 
-						}
-						//freezetag off
-						if (args[1].equalsIgnoreCase("off")){
-							if (sender.hasPermission("MCTag.freezetagoff")) {
-								boolean freeze = MCTag.vars.Modes_Freeze;
-								if (!plugin.gameOn) {
-									//freezetag is on
-									if (freeze){
-										MCTag.vars.Modes_Freeze = false;
-										MCTag.vars.save();								
-										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Freeze tag is now disabled!");
-									}
-									//freezetag is off
-									else{
-										player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "Freeze tag is already off!");
+        return true;
+    }
 
-									}
-								} 
-								else {
-									player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "You can't switch modes while a game is running!");
-								}
-							}
-							//no perms
-							else {
-								player.sendMessage(ChatColor.RED + "You don't have permission!");
-							}
-							return true;
-						}
-						//misspelled
-						else {
-							player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.AQUA + plugin.commands);
-						}
-					}
-					//misspelled
-					else {
-						player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.AQUA + plugin.commands);
-					}
-					return true;
-				}
-				//misspelled
-				else {
-					player.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.AQUA + plugin.commands);
-				}
-			}
-			sender.sendMessage("You must be a player to perform this command");
-
-			return true;
-
-		}
-		return true;
-
-	}
+    @ReflectCommand.Command(
+            name = "arena",
+            root = "mctag",
+            rootAlias = "tag",
+            permission = "MCTag.tagbacktoggle",
+            usage = "<command> [on|off]",
+            sender = ReflectCommand.Sender.EVERYONE
+    )
+    public boolean arena(CommandSender sender, String flag) {
+        if (!plugin.gameOn) {
+            if (flag.equalsIgnoreCase("on")) {
+                if (!plugin.gameOn) {
+                    if (!tagback) {
+                        MCTag.vars.Modes_Arena = true;
+                        MCTag.vars.save();
+                        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Arena mode is now enabled!");
+                    } else {
+                        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "Arena mode is already enabled!");
+                    }
+                }
+            } else if (flag.equalsIgnoreCase("off")) {
+                if (!plugin.gameOn) {
+                    boolean tagback = MCTag.vars.Modes_Arena;
+                    if (tagback) {
+                        MCTag.vars.Modes_Arena = false;
+                        MCTag.vars.save();
+                        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.DARK_AQUA + "Arena mode is now disabled!");
+                    } else {
+                        sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "Arena mode is already disabled!");
+                    }
+                }
+            }
+        } else {
+            sender.sendMessage(ChatColor.WHITE + "[" + ChatColor.RED + "MCTag" + ChatColor.WHITE + "] " + ChatColor.RED + "You can't switch modes while a game is running!");
+        }
+        return true;
+    }
 }

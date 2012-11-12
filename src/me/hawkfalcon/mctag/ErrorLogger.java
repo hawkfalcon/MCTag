@@ -20,10 +20,10 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import static java.lang.System.getProperty;
+import static java.lang.System.getProperty; //For those having trouble with static importing
 
 /**
- * Custom pluginLogger to save errors. Multiple-instance safe
+ * Custom pluginLogger to save errors. Multiple-instance safe!
  *
  * @author Icyene, Xiaomao
  */
@@ -50,7 +50,7 @@ public class ErrorLogger extends PluginLogger {
             }
             if (!(mcLogger.get(craftbukkitServer) instanceof ErrorLogger)) {
                 ErrorLogger pLog = new ErrorLogger(context);
-                prepend.set(pLog, ""); //NYET ALIAS SERVER UNDER FIRST REGISTERED PLUGIN!
+                prepend.set(pLog, "");
                 mcLogger.set(craftbukkitServer, pLog);
             }
             HashMap<String, List<String>> registry = loadMap();
@@ -61,82 +61,96 @@ public class ErrorLogger extends PluginLogger {
         }
     }
 
+    public static void generateErrorLog(Throwable thorn) {
+        LogRecord screw = new LogRecord(Level.SEVERE, null);
+        screw.setMessage("Bukkit did not catch this, so no additional info is available.");
+        screw.setThrown(thorn);
+        generateErrorLog(screw);
+    }
+
     private static boolean generateErrorLog(LogRecord record) {
         Throwable thrown;
         if ((thrown = record.getThrown()) == null)
             return false;
+
         String ERROR = ExceptionUtils.getStackTrace(thrown), NAME = "", TICKETS = "", ENDL = "";
-        Plugin PLUGIN = null;
-        for (Map.Entry<String, ArrayList<String>> entry : ((HashMap<String, ArrayList<String>>) loadMap()).entrySet()) {
+        for (Map.Entry<String, List<String>> entry : loadMap().entrySet()) {
             try {
                 List<String> data = entry.getValue();
                 if (ERROR.contains(data.get(0))) { //If the ERROR contains the package
                     NAME = entry.getKey();
-                    PLUGIN = Bukkit.getPluginManager().getPlugin(NAME);
                     TICKETS = data.get(1);
                     ENDL = data.get(2);
-
                     break;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }      
-        if (ERROR.contains(NAME + " has encountered an error!") && ERROR.contains(ErrorLogger.class.getName()))  //Check if its not our own
-            return false;
-        boolean disable = false;
-        StringBuilder err = new StringBuilder();
-        err.append("\n=============" + NAME + " has encountered an error!=============")
-                .append("\nStacktrace:\n" + ERROR)
-                .append("\n" + NAME + " version: " + PLUGIN.getDescription().getVersion())
-                .append("\nBukkit message: " + record.getMessage())
-                .append("\nPlugins loaded: " + Arrays.asList(Bukkit.getPluginManager().getPlugins()))
-                .append("\nCraftBukkit version: " + Bukkit.getServer().getBukkitVersion())
-                .append("\nJava version: " + getProperty("java.version"))
-                .append("\nOS info: " + getProperty("os.arch") + " " + getProperty("os.name") + ", " + getProperty("os.version"))
-                .append("\nPlease report this error to the " + NAME + " ticket tracker (" + TICKETS + ")!");
-        ERROR = ERROR.toLowerCase();
-        if (ERROR.contains("nullpointerexception") || ERROR.contains("stackoverflowexception")) {
-            err.append("\nA critical error has been thrown. " + NAME + " has been disabled to prevent further damage.");
-            disable = true;
-        } else {
-            err.append("\nError was minor; " + NAME + " will continue operating.");
         }
+        if (NAME == null || TICKETS == null || ENDL == null)
+            return true;
+        if (ERROR.contains(NAME + " has encountered an error!") && ERROR.contains(ErrorLogger.class.getName())) //Check if its not our own
+            return true;
         try {
-            //One-liner beauty.
-            String FILE_NAME = NAME + "_" + String.format("%032x", new BigInteger(1, MessageDigest.getInstance("MD5").digest(err.toString().getBytes()))).substring(0, 6) + ".error.log"; //Name is PLUGIN_NAME with first 6 chars of md5 appended
-            File root = new File(PLUGIN.getDataFolder(), "errors");
-            if (!root.exists())
-                root.mkdir();
-            File dump = new File(root.getAbsoluteFile(), FILE_NAME);
-            if (!dump.exists()) {
-                dump.createNewFile();
-                BufferedWriter writer = new BufferedWriter(new FileWriter(dump));
-                writer.write((err.toString() + ENDL).substring(1)); //Remove the extra /n
-                writer.close();
-                err.append("\nThis has been saved to the file ./" + PLUGIN.getName() + "/errors/" + FILE_NAME);
+            Plugin PLUGIN = Bukkit.getPluginManager().getPlugin(NAME);
+            StringBuilder err = new StringBuilder();
+            err.append("\n=============").append(NAME).append(" has encountered an error!=============")
+                    .append("\nStacktrace:\n").append(ERROR).append("\n")
+                    .append(NAME).append(" version: ").append(PLUGIN.getDescription().getVersion())
+                    .append("\nBukkit message: ").append(record.getMessage())
+                    .append("\nPlugins loaded: ").append(Arrays.asList(Bukkit.getPluginManager().getPlugins()))
+                    .append("\nCraftBukkit version: ").append(Bukkit.getServer().getBukkitVersion())
+                    .append("\nJava info: ").append(getProperty("java.version"))
+                    .append("\nOS info: ").append(getProperty("os.arch")).append(" ").append(getProperty("os.name")).append(", ").append(getProperty("os.version"))
+                    .append("\nPlease report this error to the ").append(NAME).append(" ticket tracker (").append(TICKETS).append(")!");
+            try {
+                //One-liner beauty.
+                String FILE_NAME = String.format("%s_%s_%s.error.log", NAME, thrown.getClass().getSimpleName(), new BigInteger(1,
+                        Arrays.copyOfRange(MessageDigest.getInstance("MD5").digest(err.toString().getBytes()), 0, 6)).toString().substring(0, 6));
+                File root = new File(PLUGIN.getDataFolder(), "errors");
+                if (root.exists() || root.mkdir()) {
+                    File dump = new File(root.getAbsoluteFile(), FILE_NAME);
+                    if (!dump.exists() && dump.createNewFile()) {
+                        BufferedWriter writer = new BufferedWriter(new FileWriter(dump));
+                        writer.write((err.toString() + ENDL).substring(1)); //Remove the extra /n
+                        writer.close();
+                        err.append("\nThis has been saved to the file ./").append(PLUGIN.getName()).append("/errors/").append(FILE_NAME);
+                    }
+                }
+            } catch (Exception e) {
+                err.append("\nErrors occured while saving to file. Not saved.");
+                e.printStackTrace();
             }
+            System.err.println(err.append(ENDL));
+            return true;
         } catch (Exception e) {
-            err.append("\nErrors occured while saving to file. Not saved.");
+            return true;
         }
-        err.append(ENDL);
-        System.err.println(err);
-        if (disable)
-            Bukkit.getServer().getPluginManager().disablePlugin(PLUGIN);
-        return true;
     }
 
+    private static void saveMap(HashMap map) {
+        System.setProperty("__ErrorLogger__", map.toString());
+    }
+
+    private static HashMap<String, List<String>> loadMap() {
+        String pro = getProperty("__ErrorLogger__");
+        if (StringUtils.isEmpty(pro))
+            return new HashMap();
+        List<String> format = Arrays.asList(pro.replace("=[", ", ").replace("]", "").replace("{", "").replace("}", "").split(", "));
+        HashMap<String, List<String>> ret = new HashMap<String, List<String>>();
+        ret.put(format.get(0), Arrays.asList(format.get(1), format.get(2), format.get(3)));
+        return ret;
+    }
+
+
     private static void setup() {
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread thread, Throwable throwable) {
-                LogRecord o_u_screwd = new LogRecord(Level.SEVERE, "Oh, yea. You're screwed."); //Forced to set a name, you say?
-                o_u_screwd.setMessage("Bukkit did not catch this, so no additional info is available.");
-                o_u_screwd.setThrown(throwable);
-                generateErrorLog(o_u_screwd);
-            }
-        });
         try {
+            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread thread, Throwable throwable) {
+                    generateErrorLog(throwable);
+                }
+            });
             mcLogger = MinecraftServer.class.getDeclaredField("log");
             mcLogger.setAccessible(true);
             craftbukkitServer = CraftServer.class.getDeclaredField("console");
@@ -145,23 +159,10 @@ public class ErrorLogger extends PluginLogger {
             pluginLogger.setAccessible(true);
             prepend = PluginLogger.class.getDeclaredField("pluginName");
             prepend.setAccessible(true);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private static void saveMap(HashMap map) {          
-        System.setProperty("__ErrorLogger__", map.toString());
-    }
-
-    private static HashMap loadMap() {
-        String pro = getProperty("__ErrorLogger__");
-        if (StringUtils.isEmpty(pro))
-            return new HashMap();          
-        List<String> format = Arrays.asList(pro.replace("=[", ", ").replace("]", "").replace("{", "").replace("}", "").split(", "));          
-        HashMap<String, List<String>> ret = new HashMap<String, List<String>>();
-        ret.put(format.get(0), Arrays.asList(format.get(1), format.get(2), format.get(3)));
-        return ret;
     }
 
     static {
