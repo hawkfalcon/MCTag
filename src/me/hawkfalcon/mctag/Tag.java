@@ -13,10 +13,14 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
 public class Tag implements Listener {
 
-	private MCTag plugin;
-	private TheMethods method;
+	private final MCTag plugin;
+	private final TheMethods method;
 	
-    private boolean freeze, airInHand, tagback, arena_mode, tag_damage;
+    private final boolean freeze;
+    private final boolean airInHand;
+    private final boolean tagback;
+    private final boolean arena_mode;
+    private final boolean tag_damage;
 
     public Tag(MCTag m, TheMethods me) {
 		this.plugin = m;

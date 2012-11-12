@@ -18,9 +18,11 @@ import java.util.*;
 
 public class ReflectCommand {
 
-    private HashMap<String, Set<Method>> everyoneCommands = new HashMap(), playerCommands = new HashMap(), consoleCommands = new HashMap();
-    private CommandExecutor executor;
-    private Plugin plugin;
+    private final HashMap<String, Set<Method>> everyoneCommands = new HashMap();
+    private final HashMap<String, Set<Method>> playerCommands = new HashMap();
+    private final HashMap<String, Set<Method>> consoleCommands = new HashMap();
+    private final CommandExecutor executor;
+    private final Plugin plugin;
 
     static Object[] prepend(Object[] arr, Object firstElement) {
         List<Object> pre = new ArrayList<Object>();
@@ -126,9 +128,9 @@ public class ReflectCommand {
 
     public class DynamicCommand extends org.bukkit.command.Command implements PluginIdentifiableCommand {
 
-        public CommandExecutor owner;
-        public Object registeredWith;
-        public Plugin owningPlugin;
+        public final CommandExecutor owner;
+        public final Object registeredWith;
+        public final Plugin owningPlugin;
         public String[] permissions = new String[0];
 
         public DynamicCommand(String[] aliases, String name, String usage, CommandExecutor owner, Object registeredWith, Plugin plugin) {

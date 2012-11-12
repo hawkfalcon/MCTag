@@ -21,10 +21,10 @@ import java.util.logging.Logger;
 public class MCTag extends JavaPlugin implements Listener {
 
     Logger log;
-    ArrayList<String> frozenPlayers = new ArrayList<String>();
-    ArrayList<String> playersInGame = new ArrayList<String>();
+    final ArrayList<String> frozenPlayers = new ArrayList<String>();
+    final ArrayList<String> playersInGame = new ArrayList<String>();
 
-    public HashMap<String, ItemStack[]> taggerArmor = new HashMap<String, ItemStack[]>();
+    public final HashMap<String, ItemStack[]> taggerArmor = new HashMap<String, ItemStack[]>();
     public HashMap<String, ItemStack> frozenHead = new HashMap<String, ItemStack>();
 
     String playerIt = null;

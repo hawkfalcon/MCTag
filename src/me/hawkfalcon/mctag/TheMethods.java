@@ -12,8 +12,8 @@ import java.util.Random;
 
 public class TheMethods {
 
-    private MCTag plugin;
-    private boolean arena_mode;
+    private final MCTag plugin;
+    private final boolean arena_mode;
 
 
     public TheMethods(MCTag m) {
