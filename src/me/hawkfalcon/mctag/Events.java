@@ -148,28 +148,32 @@ public class Events implements Listener{
 		}
 		
 	}
-	@EventHandler
-	public void onPlayerRespawn(PlayerRespawnEvent event) {
-		String player = event.getPlayer().getName();
-		if(player == null || plugin.playerIt == null) return;
-		plugin.getServer().broadcastMessage("DEBUGResp " + player);
-		if (plugin.playersInGame.contains(player)){
-			method.teleportPlayer(player);
-		}
-		if (plugin.playerIt.equals(player)){ 
-			Player players = plugin.getServer().getPlayer(player);
-			PlayerInventory inv = players.getInventory();
-			inv.setHelmet(new ItemStack(Material.CHAINMAIL_HELMET));
-			inv.setChestplate(new ItemStack(Material.CHAINMAIL_CHESTPLATE));
-			inv.setLeggings(new ItemStack(Material.CHAINMAIL_LEGGINGS));
-			inv.setBoots(new ItemStack(Material.CHAINMAIL_BOOTS));
-		}
-		if(plugin.frozenPlayers.contains(player)){
-			Player players = Bukkit.getServer().getPlayer(player);
-			PlayerInventory inv = players.getInventory();
-			inv.setHelmet(new ItemStack(Material.ICE));
-		}
-	}
+	@EventHandler 
+    public void onPlayerRespawn(PlayerRespawnEvent event) { 
+        String player = event.getPlayer().getName(); 
+        if (player == null || plugin.playerIt == null || plugin.playersInGame == null || plugin.frozenPlayers == null) 
+            return; 
+ 
+        System.out.println("Player name: " + player + ". Player it: " + 
+                plugin.playerIt + ". Players in game: " + plugin.playersInGame + ". Frozen players: " + plugin.frozenPlayers + "."); 
+ 
+        if (plugin.playersInGame.contains(player)) { 
+            method.teleportPlayer(player); 
+        } 
+        if (plugin.playerIt.equals(player)) { 
+            Player players = plugin.getServer().getPlayer(player); 
+            PlayerInventory inv = players.getInventory(); 
+            inv.setHelmet(new ItemStack(Material.CHAINMAIL_HELMET)); 
+            inv.setChestplate(new ItemStack(Material.CHAINMAIL_CHESTPLATE)); 
+            inv.setLeggings(new ItemStack(Material.CHAINMAIL_LEGGINGS)); 
+            inv.setBoots(new ItemStack(Material.CHAINMAIL_BOOTS)); 
+        } 
+        if (plugin.frozenPlayers.contains(player)) { 
+            Player players = Bukkit.getServer().getPlayer(player); 
+            PlayerInventory inv = players.getInventory(); 
+            inv.setHelmet(new ItemStack(Material.ICE)); 
+        } 
+    }
 
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent event) {
