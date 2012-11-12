@@ -3,6 +3,8 @@
 .project
 .settings
 .settings/
+.idea
+.idea/
 
 # Mac filesystem dust
 .DS_Store
