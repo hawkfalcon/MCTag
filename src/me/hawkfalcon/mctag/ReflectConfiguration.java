@@ -16,9 +16,9 @@ public class ReflectConfiguration {
     /*
 * Based on codename_B's non static config 'offering' :-)
 */
-    private Plugin plugin;
-    private String name;
-    private Semaphore mutex = new Semaphore(1);
+    private final Plugin plugin;
+    private final String name;
+    private final Semaphore mutex = new Semaphore(1);
 
     public ReflectConfiguration(Plugin storm, String name) {
         this.plugin = storm;
