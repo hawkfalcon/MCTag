@@ -149,7 +149,7 @@ public class TheMethods {
     public void teleportPlayer(String player) {
         String[] loc = MCTag.vars.Spawn_Location.split("\\|");
         System.out.println(Arrays.asList(loc));
-        Player p = Bukkit.getPlayerExact(player);
+        Player p = Bukkit.getPlayer(player);
         if (p == null) {
             System.out.println("FETCHED PLAYER IS NULL!!!!!!!!!!!!!!!!!!");
             return;
