@@ -179,6 +179,7 @@ public class Events implements Listener {
         }
     }
 
+
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (((Player) event.getWhoClicked()).getName().equals(plugin.playerIt)) {

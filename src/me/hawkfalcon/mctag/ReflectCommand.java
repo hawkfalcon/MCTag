@@ -3,6 +3,7 @@ package me.hawkfalcon.mctag;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -18,45 +19,40 @@ import java.util.*;
 
 public class ReflectCommand {
 
-    private final HashMap<String, Set<Method>> everyoneCommands = new HashMap();
-    private final HashMap<String, Set<Method>> playerCommands = new HashMap();
-    private final HashMap<String, Set<Method>> consoleCommands = new HashMap();
-    private final CommandExecutor executor;
-    private final Plugin plugin;
-
-    static Object[] prepend(Object[] arr, Object firstElement) {
-        List<Object> pre = new ArrayList<Object>();
-        pre.add(firstElement);
-        for (Object ob : arr)
-            pre.add(ob);
-        return pre.toArray(new Object[0]);
-    }
+    private HashMap<String, Set<Method>>
+            everyoneCommands = new HashMap<String, Set<Method>>(),
+            playerCommands = new HashMap<String, Set<Method>>(),
+            consoleCommands = new HashMap<String, Set<Method>>();
+    private CommandExecutor executor;
+    private Plugin plugin;
 
     public ReflectCommand(Plugin plug) {
         plugin = plug;
         executor = new CommandExecutor() {
             @Override
             public boolean onCommand(CommandSender commandSender, org.bukkit.command.Command command, String s, String[] args) {
-                Object retval = false;
+                Object returnValue = false;
                 String commandName = command.getName();
                 Object[] varargs = prepend(args, commandSender);
                 try {
-                    if (everyoneCommands.containsKey(command.getName())) {
+                    if (everyoneCommands.containsKey(commandName)) {
                         for (Method m : everyoneCommands.get(command.getName()))
-                            retval = m.invoke(null, varargs);
-
-                    } else if (commandSender instanceof Player) {
-                        if (playerCommands.containsKey(commandName)) {
-                            for (Method m : playerCommands.get(commandName))
-                                retval = m.invoke(null, varargs);
-                        }
-                    } else if (commandSender instanceof ConsoleCommandSender) {
-                        if (consoleCommands.containsKey(commandName)) {
-                            for (Method m : consoleCommands.get(commandName))
-                                retval = m.invoke(null, varargs);
-                        }
+                            if (varargs.length >= m.getParameterTypes().length)
+                                returnValue = m.invoke(null, trim(varargs, m.getParameterTypes().length));
                     }
-                    return (Boolean) retval;
+                    if (commandSender instanceof Player) {
+                        if (playerCommands.containsKey(commandName))
+                            for (Method m : playerCommands.get(commandName))
+                                if (varargs.length >= m.getParameterTypes().length)
+                                    returnValue = m.invoke(null, trim(varargs, m.getParameterTypes().length));
+                    }
+                    if (commandSender instanceof ConsoleCommandSender) {
+                        if (consoleCommands.containsKey(commandName))
+                            for (Method m : consoleCommands.get(commandName))
+                                if (varargs.length >= m.getParameterTypes().length)
+                                    returnValue = m.invoke(null, trim(varargs, m.getParameterTypes().length));
+                    }
+                    return (Boolean) returnValue;
                 } catch (Exception e) {
                     e.printStackTrace();
                     return false;
@@ -66,30 +62,47 @@ public class ReflectCommand {
     }
 
     public void register(Class clazz) {
-        Registrator register = new Registrator(plugin, executor);
         for (Method m : clazz.getDeclaredMethods()) {
-            Command com;
-            if ((com = m.getAnnotation(Command.class)) != null) {
-                String name = com.name();
-                List<String> alias = new ArrayList<String>();
-                if (!ArrayUtils.isEmpty(com.alias()))
-                    alias = Arrays.asList(com.alias());
-                alias.add(com.name());
-                register.register(com.name(), alias.toArray(new String[alias.size()]), com.usage(), com.permission(), com.permissionMessage());
-                HashMap<String, Set<Method>> hm;
-                try {
-                    Field map = this.getClass().getDeclaredField(com.sender().name().toLowerCase() + "Commands");
-                    hm = (HashMap) map.get(this);
-                    if (hm.containsKey(name))
-                        hm.get(m.getName()).add(m);
-                    else
-                        hm.put(name, Sets.newHashSet(m));
-                    map.set(this, hm);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            register(m, m.getAnnotation(Command.class));
         }
+    }
+
+    public void register(Method m, Command com) {
+        if (com == null)
+            return;
+        Registrator register = new Registrator(plugin, executor);
+
+        String name = com.name();
+        List<String> alias = new ArrayList<String>();
+        alias.add(name);
+        if (!ArrayUtils.isEmpty(com.alias()))
+            Collections.addAll(alias, com.alias());
+        register.register(name, alias.toArray(new String[alias.size()]), com.usage(), com.permission(), com.permissionMessage());
+        HashMap<String, Set<Method>> hm;
+        try {
+            Field map = this.getClass().getDeclaredField(com.sender().name().toLowerCase() + "Commands");
+            hm = (HashMap<String, Set<Method>>) map.get(this);
+            if (hm.containsKey(name))
+                hm.get(name).add(m);
+            else
+                hm.put(name, Sets.newHashSet(m));
+            map.set(this, hm);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    Object[] prepend(Object[] arr, Object firstElement) {
+        List<Object> pre = new ArrayList<Object>();
+        pre.add(firstElement);
+        Collections.addAll(pre, arr);
+        return pre.toArray(new Object[pre.size()]);
+    }
+
+    Object[] trim(Object[] input, int newSize) {
+        Object result[] = new Object[newSize];
+        System.arraycopy(input, 0, result, 0, newSize);
+        return result;
     }
 
     public class Registrator {
@@ -103,14 +116,7 @@ public class ReflectCommand {
         }
 
         public void register(String name, String[] aliases, String usage, String[] perms, String permMessage) {
-            DynamicCommand cmd = new DynamicCommand(aliases, name, "Error! Correct usage is: /" + aliases[0] + " " + usage.replace("<command>", name), executor, plugin, plugin);
-
-            if (perms.length > 0)
-                cmd.setPermissions(perms);
-            if (!StringUtils.isEmpty(permMessage))
-                cmd.setPermissionMessage(permMessage);
-
-            getCommandMap().register(plugin.getDescription().getName(), cmd);
+            getCommandMap().register(plugin.getDescription().getName(), new DynamicCommand(aliases, name, "Error! Correct usage is: /" + aliases[0] + " " + usage.replace("<command>", name), perms, permMessage, executor, plugin, plugin));
         }
 
         public CommandMap getCommandMap() {
@@ -128,20 +134,33 @@ public class ReflectCommand {
 
     public class DynamicCommand extends org.bukkit.command.Command implements PluginIdentifiableCommand {
 
-        public final CommandExecutor owner;
-        public final Object registeredWith;
-        public final Plugin owningPlugin;
+        public CommandExecutor owner;
+        public Object registeredWith;
+        public Plugin owningPlugin;
         public String[] permissions = new String[0];
 
-        public DynamicCommand(String[] aliases, String name, String usage, CommandExecutor owner, Object registeredWith, Plugin plugin) {
+        public DynamicCommand(String[] aliases, String name, String usage, String[] perms, String permMessage, CommandExecutor owner, Object registeredWith, Plugin plugin) {
             super(name, name, usage, Arrays.asList(aliases));
             this.owner = owner;
             this.owningPlugin = plugin;
             this.registeredWith = registeredWith;
+            if (perms.length > 0)
+                setPermissions(perms);
+            if (!StringUtils.isEmpty(permMessage))
+                setPermissionMessage(ChatColor.RED + permMessage);
         }
 
         @Override
         public boolean execute(CommandSender sender, String label, String[] args) {
+            boolean hasPerm = false;
+            for (String perm : permissions) {
+                if (sender.hasPermission(perm))
+                    hasPerm = true;
+            }
+            if (!hasPerm) {
+                sender.sendMessage(getPermissionMessage());
+                return false;
+            }
             return owner.onCommand(sender, this, label, args);
         }
 
@@ -156,26 +175,26 @@ public class ReflectCommand {
         }
     }
 
-    @Target(ElementType.METHOD)
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface Command {
-
-        public String name();
-
-        public String root() default "";
-
-        public String[] rootAlias() default {};
-
-        public String usage() default "/<command>";
-
-        public String[] alias() default {};
-
-        public Sender sender() default Sender.PLAYER;
-
-        public String[] permission() default "";
-
-        public String permissionMessage() default "You do not have the permission to execute this command!";
-    }
+    @Target(ElementType.METHOD) 
+     @Retention(RetentionPolicy.RUNTIME) 
+        public @interface Command { 
+    
+        public String name(); 
+    
+        public String root() default ""; 
+    
+        public String[] rootAlias() default {}; 
+    
+        public String usage() default "/<command>"; 
+    
+        public String[] alias() default {}; 
+    
+        public Sender sender() default Sender.PLAYER; 
+    
+        public String[] permission() default ""; 
+    
+          public String permissionMessage() default "You do not have the permission to execute this command!"; 
+     }
 
     public enum Sender {
         CONSOLE(new Class[]{ConsoleCommandSender.class}),

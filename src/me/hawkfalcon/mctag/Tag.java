@@ -38,8 +38,10 @@ public class Tag implements Listener {
         if ((event.getEntity() instanceof Player && event.getDamager() instanceof Player)) {
 
             String damager = ((Player) event.getDamager()).getName(), player = ((Player) event.getEntity()).getName();
+            if (!tag_damage) {
+                event.setCancelled(true);
+            }
             if (damager.equals(plugin.playerIt)) {
-
                 //check if player holds air or air mode is off
                 if ((Bukkit.getPlayerExact(damager).getItemInHand().getType() == Material.AIR) || (!airInHand)) {
                     //normal tag
@@ -66,9 +68,7 @@ public class Tag implements Listener {
                             }
 
                         }
-                        if (!tag_damage) {
-                            event.setCancelled(true);
-                        }
+                       
                     } //freezetag
                     else if (freeze) {
                         int theAmount = Arrays.asList(plugin.getServer().getOnlinePlayers()).size();
@@ -110,10 +110,6 @@ public class Tag implements Listener {
 
                                     }
                                 }
-
-                            }
-                            if (!tag_damage) {
-                                event.setCancelled(true);
                             }
                         }
                     } //if anything goes wrong
@@ -143,17 +139,11 @@ public class Tag implements Listener {
                             method.removeFrozenPlayer(player);
                         }
                     }
-                    if (!tag_damage) {
-                        event.setCancelled(true);
-                    }
                 }
             } //if anything goes wrong
             else {
                 if (airInHand) {
                     Bukkit.getPlayer(damager).sendMessage(ChatColor.RED + "You must have air in your hand to tag somebody");
-                }
-                if (!tag_damage) {
-                    event.setCancelled(true);
                 }
 
             }
