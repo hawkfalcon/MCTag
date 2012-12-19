@@ -63,11 +63,11 @@ public class TheMethods {
     public void rewardPlayer(String playerstring) {
         Player player = Bukkit.getPlayer(playerstring);
         if (!arena_mode) {
-            player.getInventory().addItem(new ItemStack(Material.DIAMOND, MCTag.vars.Reward_Diamond__Amount));
-            MCTag.util.message(player, MCTag.vars.Message_On__Reward.replace("%a", "" + MCTag.vars.Reward_Diamond__Amount));
+            player.getInventory().addItem(new ItemStack(Material.getMaterial(MCTag.vars.Reward_Item__Item), MCTag.vars.Reward_Item__Amount));
+            MCTag.util.message(player, MCTag.vars.Message_On__Reward.replace("%a", "" + MCTag.vars.Reward_Item__Amount));
         } else {
             if (plugin.playersInGame.size() > 2) {
-                player.getInventory().addItem(new ItemStack(Material.DIAMOND, MCTag.vars.Reward_Diamond__Amount));
+            	player.getInventory().addItem(new ItemStack(Material.getMaterial(MCTag.vars.Reward_Item__Item), MCTag.vars.Reward_Item__Amount));
             } else {
                 MCTag.util.message(player, MCTag.vars.Message_On__Not__Enough__Players__To__Give__Award);
             }
