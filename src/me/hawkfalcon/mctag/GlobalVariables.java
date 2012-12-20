@@ -22,7 +22,8 @@ public String Message_On__Join = "%p is now in the game!";
 public String Message_On__Join__When__Already__In = "You are already in a game!";
 public String Message_On__No__Tagback = "No tagbacks!";
 
-public int Reward_Diamond__Amount = 1;
+public String Reward_Item__Item = "DIAMOND";
+public int Reward_Item__Amount = 1;
 
 public boolean Modes_Arena = false;
 public boolean Modes_Freeze = false;
